@@ -1,6 +1,6 @@
 -- Randomizer for Dreadbox Typhon
 -- 1.0.0 @danut007ro
--- llllllll.co/t/randomizer_typhon
+-- llllllll.co/t/randomizer-typhon/54196
 --
 -- Generate random patches
 -- for Dreadbox Typhon
