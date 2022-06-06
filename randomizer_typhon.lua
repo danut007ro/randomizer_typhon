@@ -50,7 +50,6 @@ function init()
 
   params:add_separator("Set")
   params:add_option("set_glide", "Glide amount", {"YES", "NO"}, 1)
-  params:add_option("set_vco", "VCO level", {"YES", "NO"}, 1)
   params:add_option("set_trk", "Filter tracking", {"YES", "NO"}, 1)
   params:add_option("set_ffm", "Filter FM amount", {"YES", "NO"}, 1)
 
@@ -133,12 +132,6 @@ function randomize()
   if params:get("set_glide") == 1 then
     randomize_cc({
       7, -- GLIDE AMOUNT
-    })
-  end
-
-  if params:get("set_vco") == 1 then
-    randomize_cc({
-      8, -- VCO LEVEL
     })
   end
 
