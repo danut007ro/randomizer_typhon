@@ -121,57 +121,62 @@ function randomize()
     midi_channel = params:get("midi_channel")
 
     randomize_cc({
-        1, -- MOD WHEEL
-        2, -- CC2
-        3, -- RESONANCE
-        4, -- CUTOFF
-        5, -- WAVE
-        6, -- OSC
+      1, -- MOD WHEEL
+      2, -- CC2
+      3, -- RESONANCE
+      4, -- CUTOFF
+      5, -- WAVE
+      6, -- OSC
     })
+    sleep(0.1)
 
     if params:get("set_glide") == 1 then
-        randomize_cc({
-            7, -- GLIDE AMOUNT
-        })
+      randomize_cc({
+        7, -- GLIDE AMOUNT
+      })
     end
 
     if params:get("set_vco") == 1 then
-        randomize_cc({
-            8, -- VCO LEVEL
-        })
+      randomize_cc({
+        8, -- VCO LEVEL
+      })
     end
 
     if params:get("set_trk") == 1 then
-        randomize_cc({
-            9, -- FILTER TRACKING
-        })
+      randomize_cc({
+        9, -- FILTER TRACKING
+      })
     end
 
     if params:get("set_ffm") == 1 then
-        randomize_cc({
-            11, -- FILTER FM AMOUNT
-        })
+      randomize_cc({
+        11, -- FILTER FM AMOUNT
+      })
     end
 
+    sleep(0.1)
+
     if params:get("amp_adsr") == 1 then
-        randomize_cc({
-            34, -- VCA EG ATTACK
-            35, -- VCA EG DECAY
-            36, -- VCA EG SUSTAIN
-            37, -- VCA EG RELEASE
-            38, -- VCA EG TIME
-        })
+      randomize_cc({
+        34, -- VCA EG ATTACK
+        35, -- VCA EG DECAY
+        36, -- VCA EG SUSTAIN
+        37, -- VCA EG RELEASE
+        38, -- VCA EG TIME
+      })
+      sleep(0.1)
     end
 
     if params:get("vcf_adsr") == 1 then
-        randomize_cc({
-            27, -- VCF EG ATTACK
-            28, -- VCF EG DECAY
-            29, -- VCF EG SUSTAIN
-            30, -- VCF EG RELEASE
-            31, -- VCF EG TIME
-            33, -- VCF EG LEVEL
-        })
+      randomize_cc({
+        27, -- VCF EG ATTACK
+        28, -- VCF EG DECAY
+        29, -- VCF EG SUSTAIN
+        30, -- VCF EG RELEASE
+        31, -- VCF EG TIME
+        33, -- VCF EG LEVEL
+      })
+      sleep(0.1)
     end
 
     randomize_modulators()
@@ -191,121 +196,121 @@ function randomize_modulators()
 
     local index = 0
     local modulators = {
-        ["m1"] = {["type"] = 93, ["cc"] = {40, 41, 42}},
-        ["m2"] = {["type"] = 94, ["cc"] = {56, 57, 58}},
-        ["m3"] = {["type"] = 95, ["cc"] = {73, 74, 75}},
+      ["m1"] = {["type"] = 93, ["cc"] = {40, 41, 42}},
+      ["m2"] = {["type"] = 94, ["cc"] = {56, 57, 58}},
+      ["m3"] = {["type"] = 95, ["cc"] = {73, 74, 75}},
     }
     for modulator, modulator_params in pairs(modulators) do
-        index = index + 1
+      index = index + 1
 
-        local destinations = params:get(modulator .. "_destinations")
-        local random_destinations = params:get(modulator .. "_random_destinations")
+      local destinations = params:get(modulator .. "_destinations")
+      local random_destinations = params:get(modulator .. "_random_destinations")
 
-        -- Randomize modulator type.
-        if params:get(modulator .. "_type") == 1 then
-            randomize_cc(modulator_params["type"], 0, 3)
+      -- Randomize modulator type.
+      if params:get(modulator .. "_type") == 1 then
+        randomize_cc(modulator_params["type"], 0, 3)
+      end
+
+      -- If no destinations should be modulated then leave as it is.
+      if destinations + random_destinations == 0 then
+        goto next_modulator
+      end
+
+      -- Randomize modulator parameters.
+      for param=1,#modulator_params["cc"] do
+        randomize_cc(modulator_params["cc"][param])
+      end
+
+      -- Update allowed parameters if allowed to modulate same.
+      if params:get("modulate_same_parameters") == 1 then
+        parameters = table.shallow_copy(modulation_ccs)
+      end
+
+      -- Reset modulator destinations.
+      for param=1,#parameters do
+        randomize_cc(parameters[param][index], 64, 64)
+      end
+      sleep(0.1)
+
+      for i=1,(destinations + random_destinations) do
+        -- Random destinations might be skipped.
+        if i > destinations and math.random(0, 1) == 0 then
+          goto next_destination
         end
 
-        -- If no destinations should be modulated then leave as it is.
-        if destinations + random_destinations == 0 then
-            goto next_modulator
-        end
-
-        -- Randomize modulator parameters.
-        for param=1,#modulator_params["cc"] do
-            randomize_cc(modulator_params["cc"][param])
-        end
-
-        -- Update allowed parameters if allowed to modulate same.
-        if params:get("modulate_same_parameters") == 1 then
-            parameters = table.shallow_copy(modulation_ccs)
-        end
-
-        -- Reset modulator destinations.
-        for param=1,#parameters do
-            randomize_cc(parameters[param][index], 64, 64)
+        -- Modulate parameter and remove from allowed.
+        if #parameters > 0 then
+          param = math.random(1, #parameters)
+          randomize_cc(parameters[param][index], 0, 127)
+          table.remove(parameters, param)
         end
         sleep(0.1)
 
-        for i=1,(destinations + random_destinations) do
-            -- Random destinations might be skipped.
-            if i > destinations and math.random(0, 1) == 0 then
-                goto next_destination
-            end
+        ::next_destination::
+      end
 
-            -- Modulate parameter and remove from allowed.
-            if #parameters > 0 then
-                param = math.random(1, #parameters)
-                randomize_cc(parameters[param][index], 0, 127)
-                table.remove(parameters, param)
-            end
-            sleep(0.1)
-
-            ::next_destination::
-        end
-
-        ::next_modulator::
+      ::next_modulator::
     end
 end
 
 function randomize_fxs()
-    randomize_fx(
-        params:get("fx1_type"),
-        96, -- FX1 TYPE
-        5,
-        params:get("fx1_params"),
-        {
-            14, -- FX1 PARAMETER 1
-            15, -- FX1 PARAMETER 2
-            16, -- FX1 MIX
-        }
-    )
+  randomize_fx(
+    params:get("fx1_type"),
+    96, -- FX1 TYPE
+    5,
+    params:get("fx1_params"),
+    {
+      14, -- FX1 PARAMETER 1
+      15, -- FX1 PARAMETER 2
+      16, -- FX1 MIX
+    }
+  )
 
-    randomize_fx(
-        params:get("fx2_type"),
-        97, -- FX2 TYPE
-        4,
-        params:get("fx2_params"),
-        {
-            17, -- FX2 PARAMETER 1
-            18, -- FX2 PARAMETER 2
-            19, -- FX2 PARAMETER 3
-            20, -- FX2 PARAMETER 4
-            21, -- FX2 MIX
-        }
-    )
+  randomize_fx(
+    params:get("fx2_type"),
+    97, -- FX2 TYPE
+    4,
+    params:get("fx2_params"),
+    {
+      17, -- FX2 PARAMETER 1
+      18, -- FX2 PARAMETER 2
+      19, -- FX2 PARAMETER 3
+      20, -- FX2 PARAMETER 4
+      21, -- FX2 MIX
+    }
+  )
 
-    randomize_fx(
-        params:get("fx3_type"),
-        98, -- FX3 TYPE
-        4,
-        params:get("fx3_params"),
-        {
-            22, -- FX3 PARAMETER 1
-            23, -- FX3 PARAMETER 2
-            24, -- FX3 PARAMETER 3
-            25, -- FX3 PARAMETER 4
-            26, -- FX3 MIX
-        }
-    )
+  randomize_fx(
+    params:get("fx3_type"),
+    98, -- FX3 TYPE
+    4,
+    params:get("fx3_params"),
+    {
+      22, -- FX3 PARAMETER 1
+      23, -- FX3 PARAMETER 2
+      24, -- FX3 PARAMETER 3
+      25, -- FX3 PARAMETER 4
+      26, -- FX3 MIX
+    }
+  )
 end
 
 function randomize_fx(randomize_type, cc_type, fx_count, randomize_params, cc_params)
-    local do_sleep = false
+  local do_sleep = false
 
-    if randomize_type == 1 then
-        randomize_cc(cc_type, 0, fx_count)
+  if randomize_type == 1 then
+    randomize_cc(cc_type, 0, fx_count)
 
-        do_sleep = true
-    end
+    do_sleep = true
+  end
 
-    if randomize_params == 1 then
-        randomize_cc(cc_params)
+  if randomize_params == 1 then
+    randomize_cc(cc_params)
 
-        do_sleep = true
-    end
+    do_sleep = true
+  end
 
-    if do_sleep then
-        sleep(0.1)
-    end
+  if do_sleep then
+    sleep(0.1)
+  end
 end
