@@ -48,6 +48,12 @@ function init()
     params:add_number("m3_destinations", "M3 dest. count", 0, #modulation_ccs, 1)
     params:add_number("m3_random_destinations", "M3 random dest. count", 0, #modulation_ccs, 3)
 
+    params:add_separator("Set")
+    params:add_option("set_glide", "Glide amount", {"YES", "NO"}, 1)
+    params:add_option("set_vco", "VCO level", {"YES", "NO"}, 1)
+    params:add_option("set_trk", "Filter tracking", {"YES", "NO"}, 1)
+    params:add_option("set_ffm", "Filter FM amount", {"YES", "NO"}, 1)
+
     params:add_separator("FX")
     params:add_option("fx1_type", "FX1 type", {"YES", "NO"}, 1)
     params:add_option("fx1_hpf", "FX1 HPF", {"YES", "NO"}, 1)
@@ -121,11 +127,31 @@ function randomize()
         4, -- CUTOFF
         5, -- WAVE
         6, -- OSC
-        7, -- GLIDE AMOUNT
-        8, -- VCO LEVEL
-        9, -- FILTER TRACKING
-        11, -- FILTER FM AMOUNT
     })
+
+    if params:get("set_glide") == 1 then
+        randomize_cc({
+            7, -- GLIDE AMOUNT
+        })
+    end
+
+    if params:get("set_vco") == 1 then
+        randomize_cc({
+            8, -- VCO LEVEL
+        })
+    end
+
+    if params:get("set_trk") == 1 then
+        randomize_cc({
+            9, -- FILTER TRACKING
+        })
+    end
+
+    if params:get("set_ffm") == 1 then
+        randomize_cc({
+            11, -- FILTER FM AMOUNT
+        })
+    end
 
     if params:get("amp_adsr") == 1 then
         randomize_cc({
